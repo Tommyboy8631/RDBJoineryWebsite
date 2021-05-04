@@ -1,0 +1,56 @@
+if(isset($_POST['login-submit'])){
+
+    include_once "dataBase.php";
+
+    $username = mysqli_real_escape_string($conn, $_POST['username']);
+    $password = mysqli_real_escape_string($conn, $_POST['password']);
+
+    //$datetimeValue = date("Y-m-d h:i:sa");
+
+    //check to make sure that none of the fields are empty ...
+    if(empty($username) || empty($password)){
+        header("Location: ./login.php?error=emptybox&username=".$username);
+        exit();
+    }else{
+        //check username ..
+        $task01 = "SELECT * FROM loginsystem WHERE username=?";
+        $stmt = msqli_stmt_init($conn);
+        if(!mysqli_stmt_prepare($stmt, $task01)){
+            header("Location: ./login.php?error=statmenterror&username=".$username);
+            exit(); 
+        }else{
+            mysqli_stmt_bind_param($stmt, "s", $username);
+            mysqli_stmt_execute($stmt);
+            $iftrue = mysqpli_stmt_get_result($stmt);
+            if($row = mysqli_fetch_assoc()){
+                $passwordcheck = $password_verify($password, $row['password']); 
+                if($passwordcheck == false){
+                    header("Location: ./login.php?error=wrongpassword&username=".$username);
+                    exit();
+                }elseif($passwordcheck == true){
+                    header("Location: ./private.php"); 
+                    exit();  
+                }else(){
+                    header("Location: ./login.php?error=wrongpassword&username=".$username);
+                    exit();
+                }   
+
+            }else{
+                header("Location: ./login.php?error=nouser&username=".$username);
+                exit(); 
+            }
+        }
+    }
+
+
+
+
+
+
+
+
+}else{
+    //naughty
+    header("Location: ./index.php?error=naughty");
+    exit();
+}
